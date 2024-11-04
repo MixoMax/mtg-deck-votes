@@ -139,8 +139,14 @@
                         }
                         let percentage = deck.n_matchups_won / (deck.n_matchups_won + deck.n_matchups_lost) * 100;
                         percentage = percentage.toFixed(2);
+
+                        // calculate the certainty of the winrate
+                        // to be displayed as XX% ± YY%
+                        let certainty = Math.sqrt(percentage * (100 - percentage) / (deck.n_matchups_won + deck.n_matchups_lost));
+                        certainty = certainty.toFixed(2);
+
                         var row = document.createElement('tr');
-                        row.innerHTML = '<td>' + deck.name + '</td><td>' + deck.owner + '</td><td>' + deck.commanders.join(', ') + '</td><td>' + deck.n_matchups_won + '</td><td>' + deck.n_matchups_lost + '</td>' + '<td>' + percentage + '%</td>';
+                        row.innerHTML = '<td>' + deck.name + '</td><td>' + deck.owner + '</td><td>' + deck.commanders.join(', ') + '</td><td>' + deck.n_matchups_won + '</td><td>' + deck.n_matchups_lost + '</td>' + '<td>' + percentage + '% ± ' + certainty + '%</td>';
                         leaderboard_table.appendChild(row);
                     });
 
