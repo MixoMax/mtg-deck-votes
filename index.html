@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Deck voting</title>
+</head>
+<body>
+    <script>
+
+        function get_new_matchup() {
+            // GET /api/get_new_matchup -> {deck1: {id, name, owner, commanders}, deck2: {id, name, owner, commanders}}
+
+            fetch('/api/get_new_matchup')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('deck1_id').innerText = data.deck1.id;
+                    document.getElementById('deck1_name').innerText = data.deck1.name;
+                    document.getElementById('deck1_owner').innerText = data.deck1.owner;
+                    document.getElementById('deck1_commander1_img').alt = data.deck1.commanders[0];
+
+                    fetch("https://api.scryfall.com/cards/named?fuzzy=" + data.deck1.commanders[0])
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.image_uris) {
+                                document.getElementById('deck1_commander1_img').src = data.image_uris.normal;
+                            } else if (data.card_faces) {
+                                document.getElementById('deck1_commander1_img').src = data.card_faces[0].image_uris.normal;
+                                document.getElementById('deck1_commander1_img').alt = data.card_faces[0].name;
+
+                                document.getElementById('deck1_commander1_img').addEventListener('click', function() {
+                                    if (document.getElementById('deck1_commander1_img').src == data.card_faces[0].image_uris.normal) {
+                                        document.getElementById('deck1_commander1_img').src = data.card_faces[1].image_uris.normal;
+                                        document.getElementById('deck1_commander1_img').alt = data.card_faces[1].name;
+                                    } else {
+                                        document.getElementById('deck1_commander1_img').src = data.card_faces[0].image_uris.normal;
+                                        document.getElementById('deck1_commander1_img').alt = data.card_faces[0].name;
+                                    }
+                                });
+                            } else {
+                                document.getElementById('deck1_commander1_img').src = "";
+                            }
+                        });
+                    
+                    if (data.deck1.commanders.length > 1) {
+                        document.getElementById('deck1_commander2_img').alt = data.deck1.commanders[1];
+                        fetch("https://api.scryfall.com/cards/named?fuzzy=" + data.deck1.commanders[1])
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('deck1_commander2_img').src = data.image_uris.normal;
+                            });
+                    } else {
+                        document.getElementById('deck1_commander2_img').src = "";
+                        document.getElementById('deck1_commander2_img').alt = "";
+                    }
+
+                    document.getElementById('deck2_id').innerText = data.deck2.id;
+                    document.getElementById('deck2_name').innerText = data.deck2.name;
+                    document.getElementById('deck2_owner').innerText = data.deck2.owner;
+                    document.getElementById('deck2_commander1_img').alt = data.deck2.commanders[0];
+                    
+                    fetch("https://api.scryfall.com/cards/named?fuzzy=" + data.deck2.commanders[0])
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.image_uris) {
+                                document.getElementById('deck2_commander1_img').src = data.image_uris.normal;
+                            } else if (data.card_faces) {
+                                document.getElementById('deck2_commander1_img').src = data.card_faces[0].image_uris.normal;
+                                document.getElementById('deck2_commander1_img').alt = data.card_faces[0].name;
+
+                                document.getElementById('deck2_commander1_img').addEventListener('click', function() {
+                                    if (document.getElementById('deck2_commander1_img').src == data.card_faces[0].image_uris.normal) {
+                                        document.getElementById('deck2_commander1_img').src = data.card_faces[1].image_uris.normal;
+                                        document.getElementById('deck2_commander1_img').alt = data.card_faces[1].name;
+                                    } else {
+                                        document.getElementById('deck2_commander1_img').src = data.card_faces[0].image_uris.normal;
+                                        document.getElementById('deck2_commander1_img').alt = data.card_faces[0].name;
+                                    }
+                                });
+                            } else {
+                                document.getElementById('deck2_commander1_img').src = "";
+                            }
+                        });
+
+                    if (data.deck2.commanders.length > 1) {
+                        document.getElementById('deck2_commander2_img').alt = data.deck2.commanders[1];
+                        fetch("https://api.scryfall.com/cards/named?fuzzy=" + data.deck2.commanders[1])
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('deck2_commander2_img').src = data.image_uris.normal;
+                            });
+                    } else {
+                        document.getElementById('deck2_commander2_img').src = "";
+                        document.getElementById('deck2_commander2_img').alt = "";
+                    }
+
+
+
+                });
+        }
+
+        function vote(n) {
+            // GET /api/vote?winner_id=...&loser_id=...
+
+            var winner_id = 0;
+            var loser_id = 0;
+
+            if (n == 1) {
+                winner_id = document.getElementById('deck1_id').innerText;
+                loser_id = document.getElementById('deck2_id').innerText;
+            } else {
+                winner_id = document.getElementById('deck2_id').innerText;
+                loser_id = document.getElementById('deck1_id').innerText;
+            }
+
+            fetch('/api/vote?winner_id=' + winner_id + '&loser_id=' + loser_id)
+                .then(response => response.json())
+                .then(data => {
+                    get_new_matchup();
+                });
+        }
+
+
+        function get_leaderboard() {
+            // GET /api/leaderboard -> [{id, name, owner, commanders, n_matchups_won, n_matchups_lost}, ...], sorted by (n_matchups_won - n_matchups_lost)
+
+            fetch('/api/leaderboard')
+                .then(response => response.json())
+                .then(data => {
+                    var leaderboard_container = document.getElementById('leaderboard-container');
+                    leaderboard_container.innerHTML = '';
+
+                    var leaderboard_table = document.createElement('table');
+                    leaderboard_table.innerHTML = '<tr><th>Deck</th><th>Owner</th><th>Commanders</th><th>Wins</th><th>Losses</th></tr><th>Winrate</th>'
+
+                    data.forEach(deck => {
+                        if (deck.n_matchups_won + deck.n_matchups_lost == 0) {
+                            return;
+                        }
+                        let percentage = deck.n_matchups_won / (deck.n_matchups_won + deck.n_matchups_lost) * 100;
+                        percentage = percentage.toFixed(2);
+                        var row = document.createElement('tr');
+                        row.innerHTML = '<td>' + deck.name + '</td><td>' + deck.owner + '</td><td>' + deck.commanders.join(', ') + '</td><td>' + deck.n_matchups_won + '</td><td>' + deck.n_matchups_lost + '</td>' + '<td>' + percentage + '%</td>';
+                        leaderboard_table.appendChild(row);
+                    });
+
+                    leaderboard_container.appendChild(leaderboard_table);
+                });
+
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            get_new_matchup();
+            setInterval(get_leaderboard, 1000);
+        });
+
+    </script>
+
+    <style>
+
+        html {
+            font-family: Arial, sans-serif;
+        }
+
+        #voting-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        #deck1, #deck2 {
+            border: 1px solid black;
+            padding: 10px;
+            margin: 10px;
+            width: 40%;
+        }
+
+        img {
+            width: 15vw;
+            height: 20vw;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            height: 10vh;
+
+
+        }
+
+        button:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #text-centered {
+            text-align: center;
+        }
+
+
+    </style>
+
+    <h1>MTG Deck voting</h1>
+
+    <h2 id="text-centered">Which deck is better?</h2>
+
+    <div id = "voting-container">
+        <div id="deck1">
+            <p id="deck1_id" style="display: none"></p>
+            <h2 id="deck1_name"></h2>
+            <p id="deck1_owner"></p>
+            <img id="deck1_commander1_img" src="" alt="Commander 1">
+            <img id="deck1_commander2_img" src="" alt="Commander 2">
+
+            <button onclick="vote(1)">Vote</button>
+        </div>
+
+        <div id="deck2">
+            <p id="deck2_id" style="display: none"></p>
+            <h2 id="deck2_name"></h2>
+            <p id="deck2_owner"></p>
+            <img id="deck2_commander1_img" src="" alt="Commander 1">
+            <img id="deck2_commander2_img" src="" alt="Commander 2">
+
+            <button onclick="vote(2)">Vote</button>
+        </div>
+    </div>
+
+    <button onclick="get_new_matchup()" style="width: 40%; margin: 10px auto; display: block;">Skip</button>
+
+
+    <div id = "leaderboard-container">
+
+    </div>
+
+</body>
+</html>
