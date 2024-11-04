@@ -87,7 +87,7 @@ def new_ratings(winner_id: int, loser_id: int):
 
 def get_decks_sorted():
     global decks
-    return sorted(decks.values(), key=lambda x: x.n_matchups_won / (x.n_matchups_won + x.n_matchups_lost), reverse=True)
+    return sorted(decks.values(), key=lambda x: x.n_matchups_won / max((x.n_matchups_won + x.n_matchups_lost), 1), reverse=True)
 
 
 def get_decks_for_voting():
