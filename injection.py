@@ -14,7 +14,7 @@ while True:
         "commanders": commanders
     }
 
-    response = requests.post("http://localhost:8000/api/add_deck", json=data)
+    response = requests.post("https://mtg-vote.linush.org/api/add_deck", json=data)
     if response.status_code == 200:
         print("Deck added successfully!")
     else:
