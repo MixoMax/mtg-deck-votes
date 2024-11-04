@@ -161,6 +161,35 @@
 
         html {
             font-family: Arial, sans-serif;
+
+            --color-background: #f1f1f1;
+            --color-text: #111;
+
+            --color-button-action: #60a3ee;
+            --color-button-action-hover: #72aef1;
+
+            --color-table-header: #f2f2f2;
+            --color-table-row-even: #f2f2f2;
+            --color-table-row-hover: #f1f1f1;
+        }
+
+        html[data-theme="dark"] {
+            --color-background: #1a324d;
+            --color-text: #f1f1f1;
+
+            --color-button-action: #60a3ee;
+            --color-button-action-hover: #72aef1;
+
+            --color-table-header: #4273aa;
+            --color-table-row-even: #4273aa;
+            --color-table-row-hover: #3b6a9e;
+        }
+
+        body {
+            background-color: var(--color-background);
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
         }
 
         #voting-container {
@@ -186,12 +215,12 @@
             margin-top: 10px;
             height: 10vh;
 
-
+            background-color: var(--color-button-action);
         }
 
         button:hover {
-            background-color: #4CAF50;
-            color: white;
+            background-color: var(--color-button-action-hover);
+            color: var(--color-text);
         }
 
         #text-centered {
@@ -210,21 +239,23 @@
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: var(--color-table-header);
         }
 
         tr:nth-child(even) {
-            background-color: #f2f2f2;
+            background-color: var(--color-table-row-even);
         }
 
         tr:hover {
-            background-color: #f1f1f1;
+            background-color: var(--color-table-row-hover);
         }
 
 
 
 
     </style>
+
+    <button onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" style="position: fixed; top: 10px; right: 10px; width: 100px; height: 50px;">Toggle theme</button>
 
     <h1>MTG Deck voting</h1>
 
